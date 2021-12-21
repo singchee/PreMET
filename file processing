@@ -1,0 +1,20 @@
+#Select required datafields
+df1=select(PreMET_rawdata, c('AdmissionDT', 'DischargeDT', 'AdmissionTypeDesc', 'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects','SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', ))
+# Identify and remove duplicate PREMETs based on Same Date/Time and and URN
+
+#split Premet Date & Time
+
+# Assign unique ID to each PreMET
+
+#MET linkage
+# filter MET by date range
+# Generate specific dataset for MET/CB outcome
+# Table 1: Select PREMET URNs that EXist in MET dataset
+# Table 2: Select MET URNs that Exists in PreMET dataset 
+# DO a right join (1 onto 2)
+# Generate field for 24 hour post PreMET time
+# Generate field for MET time within 24 hours of PreMET
+
+
+#Calculate no. of after-hours PreMETs
+
