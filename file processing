@@ -2,19 +2,47 @@
 df1=select(PreMET_rawdata, c('AdmissionDT', 'DischargeDT', 'AdmissionTypeDesc', 'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects','SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', ))
 # Identify and remove duplicate PREMETs based on Same Date/Time and and URN
 
+df1$duplicate_time_URN = paste(df1$SentAt, df1$PatientURNumber)
+df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE)
+df1$URN = df1$PatientURNumber
+
 #split Premet Date & Time
 
+df1$sent_date=as.Date(df1$SentAt)
+df1$sent_time=format(df1$SentAt, "%H:%M")
+
 # Assign unique ID to each PreMET
+df1$PreMET_ID = seq.int(nrow(df2))
 
-#MET linkage
+# MET linkage
+
 # filter MET by date range
-# Generate specific dataset for MET/CB outcome
-# Table 1: Select PREMET URNs that EXist in MET dataset
-# Table 2: Select MET URNs that Exists in PreMET dataset 
-# DO a right join (1 onto 2)
-# Generate field for 24 hour post PreMET time
-# Generate field for MET time within 24 hours of PreMET
 
+MET_raw= read.csv(MET_raw)
+MET = select(MET_raw, c('UR Number', 'Sum of Age', 'Gender', 'MET Call DateTime', 'Outcome' ))
+MET$URN=MET$`UR Number`
+
+MET$date= as.Date(MET$`MET Call DateTime`, origin="1970-01-01")
+MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
+
+# Generate specific dataset for MET/CB outcome
+
+# Table 1: Select PREMET URNs that EXist in MET dataset
+
+
+# Table 2: Select MET URNs that Exists in PreMET dataset
+
+
+
+# Generate field for 24 hour post PreMET time
+df1$'24hour post Premet'= df2$SentAt +hours(24)
+
+# DO a left outer join (1 onto 2)
+merged = merge(x=df1,y=MET,by="URN")
 
 #Calculate no. of after-hours PreMETs
+
+merged_24hr = filter(merged, merged$`MET Call DateTime` >= merged$SentAt & merged$`MET Call DateTime`<=merged$`24hour post Premet`)
+
+
 
