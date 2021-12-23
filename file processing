@@ -43,7 +43,8 @@ MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
 
 # Table 2: Select MET URNs that Exists in PreMET dataset
 
-
+# no of afterhouse Premet
+df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1) #check if after hours
 
 # Generate field for 24 hour post PreMET time
 df1$'24hour post Premet'= df2$SentAt +hours(24)
@@ -51,7 +52,7 @@ df1$'24hour post Premet'= df2$SentAt +hours(24)
 # DO a left outer join (1 onto 2)
 merged = merge(x=df1,y=MET,by="URN", all.x=TRUE)
 
-#Calculate no. of after-hours PreMETs
+#Calculate no. of premets that have METs
 
 merged_24hr = filter(merged, merged$`MET Call DateTime` >= merged$SentAt & merged$`MET Call DateTime`<=merged$`24hour post Premet`)
 merged_24hr=distinct(merged_24hr, merged_24hr$PreMET_ID, .keep_all = TRUE)
