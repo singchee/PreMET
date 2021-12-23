@@ -16,13 +16,22 @@ df1$DischargeDT=convertToDateTime(df1$DischargeDT)
 df1$sent_date=as.Date(df1$SentAt)
 df1$sent_time=format(df1$SentAt, "%H:%M")
 
+
 # Assign unique ID to each PreMET
 df1$PreMET_ID = seq.int(nrow(df1))
+
+#recode type of premet into categories
+df1$type_recode = recode(df1$Type, "PreMET BGL >20 mmol/L" = "Endocrine")
+
+
+
+# derive afterhours premet
+df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1) #check if after hours
 
 #Outcomes
 df1$LOS=as.numeric(df1$DischargeDT-df1$AdmissionDT)/24 #derive LOS
 
-sort(table(df1$PrimaryDx), decreasing=TRUE)[1:10]
+sort(table(df1$PrimaryDx), decreasing=TRUE)[1:10] #primary diagnosis
 sort(prop.table(table(df1$PrimaryDx)), decreasing=TRUE)[1:10]
 
 # MET linkage
@@ -43,8 +52,6 @@ MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
 
 # Table 2: Select MET URNs that Exists in PreMET dataset
 
-# no of afterhouse Premet
-df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1) #check if after hours
 
 # Generate field for 24 hour post PreMET time
 df1$'24hour post Premet'= df2$SentAt +hours(24)
