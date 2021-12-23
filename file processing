@@ -2,9 +2,14 @@
 df1=select(PreMET_rawdata, c('AdmissionDT', 'DischargeDT', 'AdmissionTypeDesc', 'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects','SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', ))
 # Identify and remove duplicate PREMETs based on Same Date/Time and and URN
 
-df1$duplicate_time_URN = paste(df1$SentAt, df1$PatientURNumber)
-df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE)
-df1$URN = df1$PatientURNumber
+df1$duplicate_time_URN = paste(df1$SentAt, df1$PatientURNumber) #concantate URN and time
+df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE) # remove duplicates
+df1$URN = df1$PatientURNumber #rename to URN
+
+#Convert excel dates
+library(openxlsx)
+df1$AdmissionDT=convertToDateTime(df1$AdmissionDT)
+df1$DischargeDT=convertToDateTime(df1$DischargeDT)
 
 #split Premet Date & Time
 
@@ -12,7 +17,13 @@ df1$sent_date=as.Date(df1$SentAt)
 df1$sent_time=format(df1$SentAt, "%H:%M")
 
 # Assign unique ID to each PreMET
-df1$PreMET_ID = seq.int(nrow(df2))
+df1$PreMET_ID = seq.int(nrow(df1))
+
+#Outcomes
+df1$LOS=as.numeric(df1$DischargeDT-df1$AdmissionDT)/24 #derive LOS
+
+sort(table(df1$PrimaryDx), decreasing=TRUE)[1:10]
+sort(prop.table(table(df1$PrimaryDx)), decreasing=TRUE)[1:10]
 
 # MET linkage
 
@@ -38,11 +49,16 @@ MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
 df1$'24hour post Premet'= df2$SentAt +hours(24)
 
 # DO a left outer join (1 onto 2)
-merged = merge(x=df1,y=MET,by="URN")
+merged = merge(x=df1,y=MET,by="URN", all.x=TRUE)
 
 #Calculate no. of after-hours PreMETs
 
 merged_24hr = filter(merged, merged$`MET Call DateTime` >= merged$SentAt & merged$`MET Call DateTime`<=merged$`24hour post Premet`)
+merged_24hr=distinct(merged_24hr, merged_24hr$PreMET_ID, .keep_all = TRUE)
+
+#Merge MET to PreMET
+merged2 = merge(x=df1,y=merged_24hr,by="PreMET_ID", all=TRUE)
+merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outcome code
 
 
 
