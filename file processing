@@ -21,7 +21,13 @@ df1$sent_time=format(df1$SentAt, "%H:%M")
 df1$PreMET_ID = seq.int(nrow(df1))
 
 #recode type of premet into categories
-df1$type_recode = recode(df1$type, 
+
+cvs = df1$type %in% 
+
+c("PreMET SBP >200 mmHg", "PreMET HR Within Orange Zone")
+df1$type_recoded = df1$type[cvs] = cardiovascular
+
+merged2$type_recode = recode(merged2$type.x, 
 "PreMET Urine Output <20ml/h 4 Consecutive Hours"="Renal",
 "PreMET Blood Ketones >0.6 mmol/L" = "Endocrine",
 "PreMET Ketones >0.6" = "Endocrine",
@@ -65,6 +71,9 @@ df1$LOS=as.numeric(df1$DischargeDT-df1$AdmissionDT)/24 #derive LOS
 
 sort(table(df1$PrimaryDx), decreasing=TRUE)[1:10] #primary diagnosis
 sort(prop.table(table(df1$PrimaryDx)), decreasing=TRUE)[1:10]
+
+count(filter(df1, df1$NumberRedirects<1)) #no PreMET not redirected
+sum(df1$NumberRedirects) # total no of redirects
 
 #summarise PreMEt type
 
