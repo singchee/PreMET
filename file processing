@@ -1,20 +1,49 @@
+
+
+#tidyIpdata
+df2=IP_AdmApr-Oct21_ST_EDv2.xlsx
+
+#generate age
+df2$age= as.integer(df2$AdmissionDate-df2$DateOfBirth)/60/24/365
+
+#generate HOSLOS
+df2$HosLOS = as.integer(df2$DischargeDate - df2$AdmissionDate)/60/24
+
+#convert Emergency Services to medicine
+df2$SpecialtyGroup=recode(df2$SpecialtyGroup, "Emergency Services" = "Medicine")
+
+#remove all PreMETs by episode ID
+ip_noPremet=ipdata[!ipdata$EpisodeID %in% df1$EpisodeID,]
+
+#EDA for IPData
+table(df2$Gender); proportions(table(df2$Gender))
+table(df2$`Admission Type`); proportions(table(df2$`Admission Type`))
+table(df2$SpecialtyGroup); proportions(table(df2$SpecialtyGroup))
+summary(df2$age)
+table(df2$StayType); proportions(table(df2$StayType))
+summary(df2$HosLOS)
+table(df2$dischargeMethod); proportions(table(df2$dischargeMethod))
+
+#tidy PreMETs
 #Select required datafields
 df1=select(PreMET_rawdata, c('AdmissionDT', 'DischargeDT', 'AdmissionTypeDesc', 'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects','SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', ))
-# Identify and remove duplicate PREMETs based on Same Date/Time and and URN
-
-df1$duplicate_time_URN = paste(df1$SentAt, df1$PatientURNumber) #concantate URN and time
-df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE) # remove duplicates
-df1$URN = df1$PatientURNumber #rename to URN
-
 #Convert excel dates
 library(openxlsx)
 df1$AdmissionDT=convertToDateTime(df1$AdmissionDT)
 df1$DischargeDT=convertToDateTime(df1$DischargeDT)
 
+# Identify and remove duplicate PREMETs based on Same Date/Time and and URN
+df1$duplicate_time_URN = paste(df1$SentAt, df1$PatientURNumber) #concantate URN and time
+df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE) # remove duplicates
+
+df1$AdmissionDT=convertToDateTime(df1$AdmissionDT, origin = "1900-01-01")
+df1$DischargeDT=convertToDateTime(df1$DischargeDT, origin = "1900-01-01")
+
 #split Premet Date & Time
 
 df1$sent_date=as.Date(df1$SentAt)
 df1$sent_time=format(df1$SentAt, "%H:%M")
+
 
 
 # Assign unique ID to each PreMET
