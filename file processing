@@ -25,7 +25,13 @@ table(df2$dischargeMethod); proportions(table(df2$dischargeMethod))
 
 #tidy PreMETs
 #Select required datafields
-df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS', 'Admission_derived', 'DischargeDT', 'AdmissionTypeDesc', 'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects','SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', 'PatientDOB'))
+df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS', 'Admission_derived', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
+            'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 
+            'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 
+            'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects',
+            'SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', 'PatientDOB', 'StayType' 
+           ))
+           
 #Convert excel dates
 library(openxlsx)
 df1$AdmissionDT=convertToDateTime(df1$AdmissionDT)
@@ -39,9 +45,13 @@ df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE) # remove duplicates
 df1$SpecialtyGroup=recode(df1$SpecialtyGroup, "Emergency Services" = "Medicine")
 df1$age= as.integer(df1$Admission_derived-df1$PatientDOB)/60/24/365
 
+#recode death
+df1$death = ifelse(df1$dischargeMethod == 'Death', 1, 0)
+
 df1$AdmissionDT=convertToDateTime(df1$AdmissionDT, origin = "1900-01-01")
 df1$DischargeDT=convertToDateTime(df1$DischargeDT, origin = "1900-01-01")
 
+#MULTIVARIATE model
 #split Premet Date & Time
 
 df1$sent_date=as.Date(df1$SentAt)
