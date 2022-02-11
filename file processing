@@ -1,4 +1,7 @@
 
+library(tidyverse)
+library(openxlsx)
+
 #tidyIpdata
 df2=IP_AdmApr-Oct21_ST_EDv2.xlsx
 
@@ -25,31 +28,36 @@ table(df2$dischargeMethod); proportions(table(df2$dischargeMethod))
 
 #tidy PreMETs
 #Select required datafields
-df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS', 'Admission_derived', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
+df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS', 'Admission_Derived2', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
             'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 
             'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 
             'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects',
-            'SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', 'PatientDOB', 'StayType' 
+            'SentToAcceptedMins', 'AcceptedToCompletedMins','SpecialtyGroup', 'PatientDOB', 'StayType' , 'EpisodeID'
            ))
            
-#Convert excel dates
-library(openxlsx)
-df1$AdmissionDT=convertToDateTime(df1$AdmissionDT)
-df1$DischargeDT=convertToDateTime(df1$DischargeDT)
-
 # Identify and remove duplicate PREMETs based on Same Date/Time and and URN
 df1$duplicate_time_URN = paste(df1$SentAt, df1$PatientURNumber) #concantate URN and time
 df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE) # remove duplicates
 
+
 #recode speciality
 df1$SpecialtyGroup=recode(df1$SpecialtyGroup, "Emergency Services" = "Medicine")
-df1$age= as.integer(df1$Admission_derived-df1$PatientDOB)/60/24/365
+df1$age= as.integer(df1$Admission_Derived2-df1$PatientDOB)/60/24/365
 
 #recode death
-df1$death = ifelse(df1$dischargeMethod == 'Death', 1, 0)
+df1$Death = ifelse(df1$dischargeMethod == 'Death', 1, 0)
+
+#EDA
+Remove multiple PreMETs for the same episode
+df2=distinct(df1, df1$EpisodeID, .keep_all = TRUE)
+df3=select(df2, c(HOSLOS, 'Admission Type',StayType, dischargeMethod, Death, PatientURNumber, PatientGender, SpecialtyGroup, age))
+
+write.xlsx(df2, file="premet_unique.xlsx")
+
 
 df1$AdmissionDT=convertToDateTime(df1$AdmissionDT, origin = "1900-01-01")
 df1$DischargeDT=convertToDateTime(df1$DischargeDT, origin = "1900-01-01")
+
 
 #MULTIVARIATE model
 #split Premet Date & Time
