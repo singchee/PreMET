@@ -2,7 +2,7 @@
 library(tidyverse)
 library(openxlsx)
 
-#tidyIpdata
+#tidy Ipdata
 df2=IP_AdmApr-Oct21_ST_EDv2.xlsx
 
 #generate age
@@ -27,7 +27,7 @@ summary(df2$HosLOS)
 table(df2$dischargeMethod); proportions(table(df2$dischargeMethod))
 
 
-
+#TIDY PREMETS
 #Select required datafields
 df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS','Admission_Derived2', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
             'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 
@@ -50,11 +50,11 @@ df1$age= as.integer(df1$Admission_Derived2-df1$PatientDOB)/60/24/365
 df1$Death = ifelse(df1$dischargeMethod == 'Death', 1, 0)
 
 #EDA
-Remove multiple PreMETs for the same episode
+#Remove multiple PreMETs for the same episode(single episode view)
 df2=distinct(df1, df1$EpisodeID, .keep_all = TRUE)
 df3=select(df2, c(HOSLOS, 'Admission Type',StayType, dischargeMethod, Death, PatientURNumber, PatientGender, SpecialtyGroup, age))
-
 write.xlsx(df2, file="premet_unique.xlsx")
+
 
 
 df1$AdmissionDT=convertToDateTime(df1$AdmissionDT, origin = "1900-01-01")
@@ -79,12 +79,14 @@ cvs = df1$type %in%
 c("PreMET SBP >200 mmHg", "PreMET HR Within Orange Zone")
 df1$type_recoded = df1$type[cvs] = cardiovascular
 
-merged2$type_recode = recode(merged2$type.x, 
+df1$type_recode = recode(df1$Type, 
 "PreMET Urine Output <20ml/h 4 Consecutive Hours"="Renal",
 "PreMET Blood Ketones >0.6 mmol/L" = "Endocrine",
 "PreMET Ketones >0.6" = "Endocrine",
 "PreMET BGL <3.5 mmol/L" = "Endocrine",
 "PreMET BGL <3.5 or >20" = "Endocrine",
+"PreMET BGL >20 mmol/L" = "Endocrine",
+"PreMET BGL <3.5 or >20 mmol/L" = "Endocrine", 
 "PreMET Low BGL" = "Endocrine",
 "PreMET Chest Pain" = "Cardiovascular",
 "PreMET SBP >200 mmHg" ="Cardiovascular",
@@ -114,9 +116,24 @@ merged2$type_recode = recode(merged2$type.x,
                                 
                  
 
-
 # derive afterhours premet
-df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1) #check if after hours
+df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1)
+
+df1$recipient_recode = recode(df1$RecipientLevel, 
+"HMO"="HMO / Intern",
+"Intern"="HMO / Intern",
+"Intern (HMO covers Thurs)"= "HMO / Intern", 
+"Registrar" = "Registrar / Senior Registrar",
+"Senior Registrar" = "Registrar / Senior Registrar")
+
+table(df1$recipient_recode)
+proportions(table(df1$recipient_recode))
+
+table(df1$NumberRedirects)
+proportions(table(df1$NumberRedirects))
+sum(!df1$Escalated == "NULL")
+summary(as.numeric(df1$SentToAcceptedMins))
+summary(as.numeric(df1$AcceptedToCompletedMins))
 
 #Outcomes
 df1$LOS=as.numeric(df1$DischargeDT-df1$AdmissionDT)/24 #derive LOS
@@ -128,6 +145,8 @@ count(filter(df1, df1$NumberRedirects<1)) #no PreMET not redirected
 sum(df1$NumberRedirects) # total no of redirects
 
 #summarise PreMEt type
+table(df1$type_recode); proportions(table(df1$type_recode))
+
 
 
 # MET linkage
