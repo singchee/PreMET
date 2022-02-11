@@ -155,7 +155,7 @@ table(df1$type_recode); proportions(table(df1$type_recode))
 
 MET_raw= read.csv(MET_raw)
 MET = select(MET_raw, c('UR Number', 'Sum of Age', 'Gender', 'MET Call DateTime', 'Outcome' ))
-MET$URN=MET$`UR Number`
+
 
 MET$date= as.Date(MET$`MET Call DateTime`, origin="1970-01-01")
 MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
@@ -172,11 +172,13 @@ MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
 df1$'24hour post Premet'= df2$SentAt +hours(24)
 
 # DO a left outer join (1 onto 2)
+MET$URN=MET$`UR Number`
+df1$URN=df1$PatientURNumber
 merged = merge(x=df1,y=MET,by="URN", all.x=TRUE)
 
 #Calculate no. of premets that have METs
 
-merged_24hr = filter(merged, merged$`MET Call DateTime` >= merged$SentAt & merged$`MET Call DateTime`<=merged$`24hour post Premet`)
+merged_24hr = filter(merged, merged$`MET Call DateTime` >= merged$SentAt & merged$`MET Call DateTime`<=merged$`24hour post`)
 merged_24hr=distinct(merged_24hr, merged_24hr$PreMET_ID, .keep_all = TRUE)
 
 #Merge MET to PreMET
