@@ -185,5 +185,6 @@ merged_24hr=distinct(merged_24hr, merged_24hr$PreMET_ID, .keep_all = TRUE)
 merged2 = merge(x=df1,y=merged_24hr,by="PreMET_ID", all=TRUE)
 merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outcome code
 
+#Identify Cases with previous Pre-MET
 
 
