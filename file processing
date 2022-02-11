@@ -15,7 +15,7 @@ df2$HosLOS = as.integer(df2$DischargeDate - df2$AdmissionDate)/60/24
 df2$SpecialtyGroup=recode(df2$SpecialtyGroup, "Emergency Services" = "Medicine")
 
 #remove all PreMETs by episode ID
-ip_noPremet=ipdata[!ipdata$EpisodeID %in% df1$EpisodeID,]
+df2=df2[!df2$EpisodeID %in% df1$EpisodeID,]
 
 #EDA for IPData
 table(df2$Gender); proportions(table(df2$Gender))
@@ -26,9 +26,10 @@ table(df2$StayType); proportions(table(df2$StayType))
 summary(df2$HosLOS)
 table(df2$dischargeMethod); proportions(table(df2$dischargeMethod))
 
-#tidy PreMETs
+
+
 #Select required datafields
-df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS', 'Admission_Derived2', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
+df1=select(MT_PreMETs_ST_LS_tidy, c('Admission_Derived2', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
             'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 
             'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 
             'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects',
@@ -42,6 +43,7 @@ df1=distinct(df1, df1$duplicate_time_URN, .keep_all = TRUE) # remove duplicates
 
 #recode speciality
 df1$SpecialtyGroup=recode(df1$SpecialtyGroup, "Emergency Services" = "Medicine")
+
 df1$age= as.integer(df1$Admission_Derived2-df1$PatientDOB)/60/24/365
 
 #recode death
