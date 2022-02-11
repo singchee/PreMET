@@ -29,7 +29,7 @@ table(df2$dischargeMethod); proportions(table(df2$dischargeMethod))
 
 
 #Select required datafields
-df1=select(MT_PreMETs_ST_LS_tidy, c('Admission_Derived2', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
+df1=select(MT_PreMETs_ST_LS_tidy, c('HOSLOS','Admission_Derived2', 'DischargeDT', 'AdmissionTypeDesc', 'Admission Type',
             'DiedDuringEpisodeFlag', 'dischargeMethod', 'PrimaryDx', 
             'RecipientLevel', 'SenderRole','PatientURNumber', 'PatientAge', 
             'PatientGender','Type', 'SentAt', 'Escalated', 'NumberRedirects',
