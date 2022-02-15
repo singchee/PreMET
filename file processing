@@ -87,7 +87,7 @@ df1$type_recode = recode(df1$Type,
 "PreMET BGL <3.5 or >20" = "Endo_BSL",
 "PreMET BGL >20 mmol/L" = "Endo_lo",
 "PreMET BGL <3.5 or >20 mmol/L" = "Endo_BSL", 
-"PreMET Low BGL" = "Endo_hypo",
+"PreMET Low BGL" = "Endo_lo",
 "PreMET Chest Pain" = "CVS_CP",
 "PreMET SBP >200 mmHg" ="CVS_BP",
 "PreMET HR Within Orange Zone" = "CVS_HR",
@@ -102,8 +102,8 @@ df1$type_recode = recode(df1$Type,
 "PreMET RR 25-29" = "Resp_RR",
 "PreMET SpO2 Orange Zone" = "Resp_SpO2",
 "PreMET RR Orange Zone" = "Resp_RR",
-"PreMET Moderate Respiratory Distress" = "Respiratory RR",
-"PreMET SpO2 92-95%" = "Respiratory SpO2",
+"PreMET Moderate Respiratory Distress" = "Resp_Distress",
+"PreMET SpO2 92-95%" = "Resp_SpO2",
 "PreMET Pain 8-10" = "Pain",
 "PreMET Epigastric Pain" = "Pain",
 "PreMET Looks/Feels Unwell" = "Staff/Family concern",
@@ -115,6 +115,8 @@ df1$type_recode = recode(df1$Type,
 "PreMET SPECIALTY Observation Chart Escalation" = "Other")
                                 
                  
+#Recode age
+
 
 # derive afterhours premet
 df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1)
