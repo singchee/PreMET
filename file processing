@@ -194,7 +194,7 @@ merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outco
 
 #Identify Cases with previous Pre-MET during admission
 #count sequential no of premets for a given episode ID
-#take counts >2 as previous-preMET 
+#take counts >1 as previous-preMET 
 
 
 #Generate field for 24 hours pre-PReMET
