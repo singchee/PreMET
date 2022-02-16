@@ -192,15 +192,19 @@ merged_outcome$outcome2 = '1'
 merged2 = merge(x=df1,y=merged_outcome[, c("MET Call DateTime","outcome2", "PreMET_ID")], by='PreMET_ID', all=TRUE)
 merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outcome code
 
-#Identify Cases with previous Pre-MET during admission
-#count sequential no of premets for a given episode ID
-#take counts >1 as previous-preMET 
+
 
 
 #Generate field for 24 hours pre-PReMET
 merged2$'24h pre Premet'= merged2$SentAt -hours(24)
 
+#Identify Cases with previous Pre-MET during admission
+#count sequential no of premets for a given episode ID =COUNTIF(Y$2:Y2,Y2)
+#take counts >1 as previous-preMET =IF(AL2>1, 1, 0)
 
+# Check no of preMETs that fall within 24 hours of a previous MET call for a previous MET call
+#sort by Episode ID , then PREMET send time (oldest to newest)
+=IF(AL2>1,IF(Y2=Y1,IF(Q2>AR1,1,0),0)) -- meaning, IF MULTIPLE PREMETS, CHECK IF SAME EPISODE ID AS PRECEDING MET ENTRY - IF SAME EPISODE ID, CHECK IF SENT TIME IS GREATER THAN 24 HOUR PRE-PREMET
 
 #Identify previous MET/CB calls
 #Generate variable for 24 hours pre-PReMET
