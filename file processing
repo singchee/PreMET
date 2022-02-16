@@ -84,11 +84,11 @@ df1$type_recode = recode(df1$Type,
 "PreMET Urine Output <20ml/h 4 Consecutive Hours"="Renal",
 "PreMET Blood Ketones >0.6 mmol/L" = "Endo_ketosis",
 "PreMET Ketones >0.6" = "Endo_ketosis",
-"PreMET BGL <3.5 mmol/L" = "Endo_hi",
+"PreMET BGL <3.5 mmol/L" = "Endo_BSL",
 "PreMET BGL <3.5 or >20" = "Endo_BSL",
-"PreMET BGL >20 mmol/L" = "Endo_lo",
+"PreMET BGL >20 mmol/L" = "Endo_BSL",
 "PreMET BGL <3.5 or >20 mmol/L" = "Endo_BSL", 
-"PreMET Low BGL" = "Endo_lo",
+"PreMET Low BGL" = "Endo_BSL",
 "PreMET Chest Pain" = "CVS_CP",
 "PreMET SBP >200 mmHg" ="CVS_BP",
 "PreMET HR Within Orange Zone" = "CVS_HR",
@@ -100,11 +100,11 @@ df1$type_recode = recode(df1$Type,
 "PreMET AVPU Response to Voice" = "Neurological",
 "PreMET New Change in Cognition or Delirium" = "Neurological",
 "PreMET AVPU Response to Pain" = "Neurological",
-"PreMET RR 25-29" = "Resp_RR",
-"PreMET SpO2 Orange Zone" = "Resp_SpO2",
-"PreMET RR Orange Zone" = "Resp_RR",
-"PreMET Moderate Respiratory Distress" = "Resp_Distress",
-"PreMET SpO2 92-95%" = "Resp_SpO2",
+"PreMET RR 25-29" = "Resp",
+"PreMET SpO2 Orange Zone" = "Resp",
+"PreMET RR Orange Zone" = "Resp",
+"PreMET Moderate Respiratory Distress" = "Resp",
+"PreMET SpO2 92-95%" = "Resp",
 "PreMET Pain 8-10" = "Pain",
 "PreMET Epigastric Pain" = "Pain",
 "PreMET Looks/Feels Unwell" = "Staff/Family concern",
@@ -197,6 +197,9 @@ merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outco
 #Generate field for 24 hours pre-PReMET
 merged2$'24h pre Premet'= merged2$SentAt -hours(24)
 
+
+
+#Identify previous MET/CB calls
 #Generate variable for 24 hours pre-PReMET
 merged3 = merge(x=merged2,y=MET,by="URN", all.x=TRUE)
 
