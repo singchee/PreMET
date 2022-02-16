@@ -192,7 +192,9 @@ merged_outcome$outcome2 = '1'
 merged2 = merge(x=df1,y=merged_outcome[, c("MET Call DateTime","outcome2", "PreMET_ID")], by='PreMET_ID', all=TRUE)
 merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outcome code
 
-#Identify Cases with previous Pre-MET
+#Identify Cases with previous Pre-MET during admission
+
+
 
 #Generate field for 24 hours pre-PReMET
 merged2$'24h pre Premet'= merged2$SentAt -hours(24)
