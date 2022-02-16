@@ -59,6 +59,7 @@ df1$age= as.integer(df1$Admission_Derived2-df1$PatientDOB)/60/24/365
 #recode death
 df1$Death = ifelse(df1$dischargeMethod == 'Death', 1, 0)
 
+
 #EDA for PreMETs
 
 #Remove multiple PreMETs for the same episode(single episode view)
@@ -66,9 +67,6 @@ df3=distinct(df1, df1$EpisodeID, .keep_all = TRUE)
 df3=select(df3, c(HOSLOS, 'Admission Type',StayType, dischargeMethod, Death, PatientURNumber, PatientGender, SpecialtyGroup, age))
 write.xlsx(df3, file="premet_unique.xlsx")
 
-
-df1$AdmissionDT=convertToDateTime(df1$AdmissionDT, origin = "1900-01-01")
-df1$DischargeDT=convertToDateTime(df1$DischargeDT, origin = "1900-01-01")
 
 
 #MULTIVARIATE model
@@ -79,8 +77,6 @@ df1$sent_time=format(df1$SentAt, "%H:%M")
 
 
 
-# Assign unique ID to each PreMET
-df1$PreMET_ID = seq.int(nrow(df1))
 
 #recode type of premet into categories
 
@@ -158,7 +154,8 @@ table(df1$type_recode); proportions(table(df1$type_recode))
 
 # MET linkage
 
-# filter MET by date range
+
+# filter MET by study date range
 
 MET_raw= read.csv(MET_raw)
 MET = select(MET_raw, c('UR Number', 'Sum of Age', 'Gender', 'MET Call DateTime', 'Outcome' ))
@@ -169,17 +166,12 @@ MET =filter(MET, MET$date >="2021-04-13" & MET$date <="2021-10-2")
 
 # Generate specific dataset for MET/CB outcome
 
-# Table 1: Select PREMET URNs that EXist in MET dataset
-
-
-# Table 2: Select MET URNs that Exists in PreMET dataset
-
-
 # Generate field for 24 hour post PreMET time
 df1$'24h post Premet'= df1$SentAt +hours(24)
 
-#Generate field for 24 hours pre-PReMET
-df1$'24h pre  Premet'= df1$SentAt -hours(24)
+
+# Assign unique ID to each PreMET
+df1$PreMET_ID = seq.int(nrow(df1))
 
 # DO a left outer join (1 onto 2)
 MET$URN=MET$`UR Number`
@@ -188,13 +180,18 @@ merged = merge(x=df1,y=MET,by="URN", all.x=TRUE)
 
 #identify no. of premets that have post-PreMET METs
 
-merged_outcome = filter(merged, merged$`MET Call DateTime` >= merged$SentAt & merged$`MET Call DateTime`<=merged$`24hour post`)
+merged_outcome = filter(merged, merged$`MET Call DateTime` >= merged$SentAt, merged$`MET Call DateTime`<=merged$'24h post Premet')
 merged_outcome = distinct(merged_outcome, merged_outcome$PreMET_ID, .keep_all = TRUE)
 
 #Add Pre-METs with outcome to entire PreMET dataset
-merged2 = merge(x=df1,y=merged_24hr,by="PreMET_ID", all=TRUE)
+merged2 = merge(x=df1,y=merged_outcome[,c("outcome"),by="PreMET_ID", all=TRUE)
 merged2$outcome = ifelse(is.na(merged2$`MET Call DateTime`), 0, 1) #assign outcome code
 
 #Identify Cases with previous Pre-MET
 
-
+#Generate field for 24 hours pre-PReMET
+df1$'24h pre Premet'= df1$SentAt -hours(24)
+#Generate variable for 24 hours pre-PReMET
+MET_before = filter(merged, merged$`MET Call DateTime` <= merged$SentAt & merged$`MET Call DateTime`>= merged$`24h pre Premet`)
+MET_before$PrePreMET='1'
+merged2 = merge(x=df1,y=MET_before$PrePreMET,by="PreMET_ID", all=TRUE)
