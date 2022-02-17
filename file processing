@@ -117,7 +117,7 @@ df1$type_recode = recode(df1$Type,
                                 
                  
 #Recode age
-df1$Age_recode = ifelse(df1$age >="50", 1, 0)
+df1$Age_recode = ifelse(df1$age >="65", 1, 0)
 
 # derive afterhours premet
 df1$afterhr = ifelse(format(df1$SentAt, "%H:%M") >= "08:00" & format(df1$SentAt, "%H:%M") <= "17:00", 0, 1)
