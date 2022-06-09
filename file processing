@@ -27,6 +27,12 @@ df2$SpecialtyGroup=recode(df2$SpecialtyGroup, "Emergency Services" = "Medicine")
 df2=df2[!df2$EpisodeID %in% df1$EpisodeID,]
 
 #EDA for IPData
+library(TableOne)
+myvars = c("age", "Gender", "PreMET", "HosLOS", "Death", "SpecialtyGroup", "Admission Type")
+catvars = c("Gender", "Death", "SpecialtyGroup", "Admission Type")
+tab3= CreateTableOne(var=myvars, strat="PreMET", data=merged_final, factorVars = catvars)
+chisq.test(merged_final$Death,  merged_final$PreMET)
+
 table(df2$Gender); proportions(table(df2$Gender))
 table(df2$`Admission Type`); proportions(table(df2$`Admission Type`))
 table(df2$SpecialtyGroup); proportions(table(df2$SpecialtyGroup))
